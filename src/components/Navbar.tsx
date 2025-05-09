@@ -24,7 +24,16 @@ return (
         <li className="">
             <NavLink to={"/"}>Home</NavLink>
         </li>
-        {userData? (<span className="block cursor-pointer" onClick={logout}>Logout</span>):(  <p className="flex space-x-4 items-center">
+        {userData? (
+            <div className="flex items-center space-x-4 font-semibold text-md">
+                <li className="text-black duration-200 ">
+                    <NavLink to ={"/profile"}>Profile</NavLink>
+                </li>
+                <button className="cursor-pointer" onClick={logout}>Logout</button>
+
+
+            </div>
+            ):(  <p className="flex space-x-4 items-center">
   <li>
             <NavLink to ={"/register"}>Register</NavLink>
         </li>

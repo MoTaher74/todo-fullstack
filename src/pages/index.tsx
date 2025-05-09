@@ -1,11 +1,12 @@
+import TodoList from "../components/TodoList"
 
 
 const HomePage =()=>{
 
     return(
-       <section>
-        <h1>this is home page</h1>
-       </section>
+        <section className="max-w-2xl mx-auto">
+        <TodoList />
+      </section>
     )
 
 
