@@ -1,12 +1,20 @@
 
 import axiosInstance from "../config/axios.config";
 import { useQuery } from "@tanstack/react-query";
+import useAuthQuery from "../hooks/useAuthQuery";
 
 
 const storageKey = "isLoggedIn";
 const userDataString = localStorage.getItem(storageKey);
 const userData = userDataString ? JSON.parse(userDataString) : null;
 const URL = "/users/me?populate=todos";
+
+ interface ITodo {
+    id: number;
+    title: string;
+    description: string;
+  }
+  
 const TodoList =()=>{
 
 // const [todos,setTodos] = useState([]);
@@ -28,19 +36,7 @@ const TodoList =()=>{
 //   },[userData.jwt]);
 
 
-const {isLoading,data,error} =useQuery({
-    queryKey:["todos"],
-    
-    queryFn:async ()=>{
-       const {data}= await axiosInstance.get(URL,{
-            headers:{
-                Authorization: `Bearer ${userData.jwt}`
-            }
-        })
-            
-        return data.todos;
-    }
-});
+const {isLoading,data,error} = useAuthQuery({queryKey:["todos"],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
 
 // console.log(data , isLoading ,error);
 
@@ -69,7 +65,7 @@ return (
 
         {
 
-    data.map(todo=>(
+    data.map((todo:ITodo)=>(
         <div key={todo.id} className="flex items-center justify-between hover:bg-gray-200 duration-300 p-3 rounded-md even:bg-gray-100">
     <p className="w-full font-semibold">{todo.title}</p>
     <div className="flex items-center justify-end w-full space-x-3">
