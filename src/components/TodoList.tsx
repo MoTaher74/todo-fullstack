@@ -9,6 +9,7 @@ import axiosInstance from "../config/axios.config";
 import TodoSkeleton from "./ui/TodoSkeleton";
 import Button from "./ui/Button";
 import Spinner from "./ui/Spinner";
+import EmptyTask from "./EmptyTask";
 
 
 {/**
@@ -363,7 +364,7 @@ return (
             <Button onClick={openAddNewTodoModalFun} className="bg-indigo-600 hover:bg-indigo-400" width="w-full">Add New Task</Button>
         </div>
 
-{data.map((todo:ITodo)=>(
+{data.length?data.map((todo:ITodo)=>(
         <div key={todo.id} className="max-w-lg mx-auto flex items-center justify-between hover:bg-gray-200 duration-300 p-3 rounded-md even:bg-gray-100">
   
    <p className="w-full font-semibold">📝 {todo.title}</p>
@@ -374,7 +375,7 @@ return (
     </div>
 
     </div>
-    ))
+    )):<EmptyTask title="No Tasks Yet !"/>
         }
       
 {/** -------- this is add task Modal */}
