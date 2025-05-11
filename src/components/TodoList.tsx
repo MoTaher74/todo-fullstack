@@ -206,6 +206,7 @@ const TodoList =()=>{
      * and sends a POST request to the `/todos` endpoint to create a new task. If the request is
      * successful, it closes the "Add New Todo" modal. The `setUpdate` state is used to manage
      * the loading state during the operation.
+     * user:[userData.user.id] => used for pushed add task in page bady 
      * 
      * @param e - The form submission event of type `FormEvent<HTMLFormElement>`.
      * 
@@ -215,10 +216,10 @@ const TodoList =()=>{
 
       setUpdate(true)
       e.preventDefault();
-      // console.log("Todo ID to update:", isTodoAddModal.);
+
       try {
           const {title,description} = isTodoAddModal;
-          const {status} = await axiosInstance.post(`/todos`,{data:{title,description }},{
+          const {status} = await axiosInstance.post(`/todos`,{data:{title,description,user:[userData.user.id] }},{
               headers:
               {
                   Authorization:`Bearer ${userData.jwt}`}
