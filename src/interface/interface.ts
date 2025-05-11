@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface IRegisterForm{
     name:"username"|"email"|"password";
     type:string;
@@ -27,9 +29,16 @@ export interface IErrorResponse {
     };
 }
 
-// export interface ITodo {
-//     id: number;
-//     title: string;
-//     description: string;
-//   }
+export interface ITodo {
+    id: number;
+    title: string;
+    description: string;
+  }
   
+
+export interface IModal{
+    isOpen:boolean;
+    close:()=>void;
+    title?:string;
+    children:ReactNode;
+}
