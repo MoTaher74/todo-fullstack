@@ -11,9 +11,6 @@ import Button from "./ui/Button";
 import Spinner from "./ui/Spinner";
 
 
-
-const storageKey = "isLoggedIn";
-const userDataString = localStorage.getItem(storageKey);
 {/**
  * Parses a JSON string to retrieve user data or returns `null` if the string is invalid or undefined.
  *
@@ -35,11 +32,11 @@ const userDataString = localStorage.getItem(storageKey);
  * @param userDataString - A string containing JSON data or `undefined`.
  * @returns The parsed JSON object if valid, or `null` if the string is invalid or undefined.
  */}
+const storageKey = "isLoggedIn";
+const userDataString = localStorage.getItem(storageKey);
 const userData = userDataString ? JSON.parse(userDataString) : null;
 const URL = "/users/me?populate=todos";
 
-
- 
 {/**
  * A component that displays a list of todos, with the ability to edit an individual todo.
  * 
@@ -58,7 +55,7 @@ const TodoList =()=>{
 
 
 
-    /**
+ {   /**
      * State variable to track whether an update is required.
      * 
      * @constant
@@ -77,7 +74,8 @@ const TodoList =()=>{
      * // To reset the update state:
      * setUpdate(false);
      * ```
-     */
+     */}
+
     const[update,setUpdate] =useState(false)
 
 { /**
@@ -103,7 +101,7 @@ const TodoList =()=>{
 
 
 
-    // const [queryversion,setQueryVersion]=useState(1);
+  
    { /**
      * Close the edit modal and reset the todo to be edited.
      * 
@@ -140,6 +138,21 @@ const TodoList =()=>{
     setTodoToEdit(todo);
     setIsOpenConfirmModal(true);
   };
+{  /**
+   * Handles the removal of a todo item by sending a DELETE request to the server.
+   * 
+   * @async
+   * @function
+   * @throws Will log an error to the console if the request fails.
+   * 
+   * @description
+   * This function sends an HTTP DELETE request to remove a specific todo item identified
+   * by its `documentId`. If the request is successful and returns a status of 204 (No Content),
+   * it closes the confirmation modal and increments the query version to trigger a re-fetch
+   * or update of the todo list.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the operation is complete.
+   */}
   const onRemove = async () => {
     try {
       const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
@@ -149,7 +162,7 @@ const TodoList =()=>{
       });
       if (status === 204) {
         closeConfirmModal();
-        // setQueryVersion((prev) => prev + 1);
+        setQueryVersion((prev) => prev + 1);
       }
     } catch (error) {
       console.log(error);
@@ -170,12 +183,33 @@ const TodoList =()=>{
     const openAddNewTodoModalFun = ()=>setOpenAddNewTodoModal(true);
     
 
+{    /**
+     * Handles the change event for input or textarea elements in the "Add Task" modal.
+     * Updates the state of the `isTodoAddModal` object with the new value for the corresponding field.
+     *
+     * @param event - The change event triggered by the input or textarea element.
+     *   - `event.target.value` contains the new value of the input or textarea.
+     *   - `event.target.name` specifies the name of the field being updated.
+     */}
     const onChangeHandlerAddTask = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { value, name } = event.target;
       setIsTodoAddModal({...isTodoAddModal,[name]:value});
   
   };
 
+{    /**
+     * Handles the submission of the form to add a new task.
+     * 
+     * This function is triggered when the form is submitted. It prevents the default
+     * form submission behavior, extracts the title and description from the `isTodoAddModal` state,
+     * and sends a POST request to the `/todos` endpoint to create a new task. If the request is
+     * successful, it closes the "Add New Todo" modal. The `setUpdate` state is used to manage
+     * the loading state during the operation.
+     * 
+     * @param e - The form submission event of type `FormEvent<HTMLFormElement>`.
+     * 
+     * @throws Logs any errors that occur during the API request to the console.
+     */}
     const onSubmitHandlerAddTask =async (e:FormEvent<HTMLFormElement>)=>{
 
       setUpdate(true)
@@ -183,7 +217,7 @@ const TodoList =()=>{
       // console.log("Todo ID to update:", isTodoAddModal.);
       try {
           const {title,description} = isTodoAddModal;
-          const {status} = await axiosInstance.post(`/todos/${todoToEdit.documentId}`,{data:{title,description }},{
+          const {status} = await axiosInstance.post(`/todos`,{data:{title,description }},{
               headers:
               {
                   Authorization:`Bearer ${userData.jwt}`}
@@ -191,6 +225,7 @@ const TodoList =()=>{
               
               if(status === 200 || status ===201){
                 closeAddNewTodoModal();
+                setQueryVersion(prev =>prev +1)
               }
       } catch (error) {
           console.log(error)
@@ -251,6 +286,7 @@ const TodoList =()=>{
                 
                 if(status === 200){
                     onCloseEdit();
+                    setQueryVersion((prev) => prev + 1);
                 }
         } catch (error) {
             console.log(error)
@@ -274,9 +310,46 @@ const onChangeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaEleme
 
 };
 
-const {isLoading,data,error} = useAuthQuery({queryKey:["todoList",`${todoToEdit.id}`],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
+// ------------------------------------------------
 
-// if(!isLoading) return <TodoSkeleton/>
+  const [queryversion,setQueryVersion]=useState(1);
+
+{/**
+ * Custom hook to fetch the todo list data using the `useAuthQuery` hook.
+ *
+ * @constant
+ * @property {boolean} isLoading - Indicates whether the data is currently being loaded.
+ * @property {any} data - The fetched data for the todo list. The structure of this data depends on the API response.
+ * @property {any} error - Contains error information if the query fails.
+ *
+ * @function useAuthQuery
+ * @param {object} options - The options object for the query.
+ * @param {string[]} options.queryKey - An array representing the unique key for the query. 
+ *                                      In this case, it includes "todoList" and the `queryversion`.
+ * @param {string} options.url - The API endpoint URL to fetch the todo list data.
+ * @param {object} options.config - Configuration object for the query.
+ * @param {object} options.config.headers - HTTP headers for the request.
+ * @param {string} options.config.headers.Authorization - The authorization header containing the JWT token.
+ *
+ * @example
+ * // Example usage:
+ * const { isLoading, data, error } = useAuthQuery({
+ *   queryKey: ["todoList", `${queryversion}`],
+ *   url: URL,
+ *   config: {
+ *     headers: {
+ *       Authorization: `Bearer ${userData.jwt}`
+ *     }
+ *   }
+ * });
+ *
+ * @remarks
+ * - Ensure that `queryversion` and `URL` are properly defined before using this hook.
+ * - The `userData.jwt` must contain a valid JWT token for authentication.
+ * - Handle the `isLoading` and `error` states appropriately in your component to provide a good user experience.
+ */}
+const {isLoading,data,error} = useAuthQuery({queryKey:["todoList",`${queryversion}`],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
+
 if(isLoading){
     return Array.from({length:5}).map((_,index)=><TodoSkeleton key={index}/>)
 }
@@ -312,7 +385,7 @@ return (
        <TextArea name="description" value={isTodoAddModal.description} onChange={onChangeHandlerAddTask}/>
     </div>
     <div className="flex items-center space-x-6 px-10">
-        <Button className="bg-indigo-600 hover:bg-indigo-400" width="w-full">{update? <Spinner/>:"Update"}</Button>
+        <Button className="bg-indigo-600 hover:bg-indigo-400" width="w-full">{update? <Spinner/>:"Add Task"}</Button>
         <Button type="button" onClick={closeAddNewTodoModal} className="bg-gray-600 hover:bg-gray-900" width={"w-full"}>Cancel</Button>
        </div>
 
