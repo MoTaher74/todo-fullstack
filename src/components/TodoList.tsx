@@ -103,12 +103,7 @@ const TodoList =()=>{
 
 
 
-    const [openAddNewTodoModal,setOpenAddNewTodoModal] = useState(false);
-
-    const closeAddNewTodoModal = ()=> setOpenAddNewTodoModal(false);
-    const openAddNewTodoModalFun = ()=> setOpenAddNewTodoModal(true);
-
-    const [queryversion,setQueryVersion]=useState(1);
+    // const [queryversion,setQueryVersion]=useState(1);
    { /**
      * Close the edit modal and reset the todo to be edited.
      * 
@@ -136,32 +131,75 @@ const TodoList =()=>{
 
     const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
 
-
     const closeConfirmModal =()=>{
-        setTodoToEdit({ id:0,documentId:'0' ,title: '', description: '' });
+      setTodoToEdit({ id:0,documentId:'0' ,title: '', description: '' });
 
-        setIsOpenConfirmModal(false)
+      setIsOpenConfirmModal(false)
+  }
+  const openConfirmModal = (todo: ITodo) => {
+    setTodoToEdit(todo);
+    setIsOpenConfirmModal(true);
+  };
+  const onRemove = async () => {
+    try {
+      const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
+        headers: {
+          Authorization: `Bearer ${userData.jwt}`,
+        },
+      });
+      if (status === 204) {
+        closeConfirmModal();
+        // setQueryVersion((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.log(error);
     }
+  };
 
-    const onRemove = async () => {
-        try {
-          const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
-            headers: {
-              Authorization: `Bearer ${userData.jwt}`,
-            },
-          });
-          if (status === 204) {
-            closeConfirmModal();
-            // setQueryVersion((prev) => prev + 1);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-    const openConfirmModal = (todo: ITodo) => {
-        setTodoToEdit(todo);
-        setIsOpenConfirmModal(true);
-      };
+    {/**  Add for todos or task in project  */}
+    
+    const [isTodoAddModal, setIsTodoAddModal] = useState({
+      title:"",
+      description:""
+    });
+  
+
+    const [openAddNewTodoModal,setOpenAddNewTodoModal] = useState(false);
+
+    const closeAddNewTodoModal = ()=> {setOpenAddNewTodoModal(false);setIsTodoAddModal({title:"",description:""})}
+    const openAddNewTodoModalFun = ()=>setOpenAddNewTodoModal(true);
+    
+
+    const onChangeHandlerAddTask = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { value, name } = event.target;
+      setIsTodoAddModal({...isTodoAddModal,[name]:value});
+  
+  };
+
+    const onSubmitHandlerAddTask =async (e:FormEvent<HTMLFormElement>)=>{
+
+      setUpdate(true)
+      e.preventDefault();
+      // console.log("Todo ID to update:", isTodoAddModal.);
+      try {
+          const {title,description} = isTodoAddModal;
+          const {status} = await axiosInstance.post(`/todos/${todoToEdit.documentId}`,{data:{title,description }},{
+              headers:
+              {
+                  Authorization:`Bearer ${userData.jwt}`}
+              });
+              
+              if(status === 200 || status ===201){
+                closeAddNewTodoModal();
+              }
+      } catch (error) {
+          console.log(error)
+      }finally{
+          setUpdate(false)
+      }
+  }
+
+
 
 {   /**
     * Handles the submission of the edit form for a todo item.
@@ -226,9 +264,9 @@ const TodoList =()=>{
  * Handles the change event for input and textarea elements.
  * Updates the `todoToEdit` state with the new value for the corresponding field.
  *
- * @param event - The change event triggered by an input or textarea element.
- *   - `event.target.value` contains the new value of the input/textarea.
- *   - `event.target.name` specifies the name of the field being updated.
+ * @param event - The change event triggered by the input or textarea element.
+ *   - `event.target.value`: The new value entered by the user.
+ *   - `event.target.name`: The name attribute of the input or textarea element, used as the key to update the state.
  */}
 const onChangeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value, name } = event.target;
@@ -266,12 +304,12 @@ return (
     ))
         }
       
-
-        <Modal close={()=>console.log("close")} isOpen={openAddNewTodoModal} title="Add New Tasks " >
-<form className="space-y-6" onSubmit={onSubmitHandler}>
+{/** -------- this is add task Modal */}
+        <Modal close={closeAddNewTodoModal} isOpen={openAddNewTodoModal} title="Add New Tasks " >
+<form className="space-y-6" onSubmit={onSubmitHandlerAddTask}>
     <div className="flex flex-col ">
-       <Input name="title" value={todoToEdit.title} onChange={onChangeHandler}/>
-       <TextArea name="description" value={todoToEdit.description} onChange={onChangeHandler}/>
+       <Input name="title" value={isTodoAddModal.title} onChange={onChangeHandlerAddTask}/>
+       <TextArea name="description" value={isTodoAddModal.description} onChange={onChangeHandlerAddTask}/>
     </div>
     <div className="flex items-center space-x-6 px-10">
         <Button className="bg-indigo-600 hover:bg-indigo-400" width="w-full">{update? <Spinner/>:"Update"}</Button>
@@ -280,6 +318,8 @@ return (
 
 </form>
          </Modal>
+
+         {/* ------------------------------ */}
         <Modal close={()=>console.log("close")} isOpen={isEditOpen} title="Edit this todo " >
 <form className="space-y-6" onSubmit={onSubmitHandler}>
 <div className="flex flex-col ">
