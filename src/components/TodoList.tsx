@@ -6,6 +6,9 @@ import Modal from "./ui/Modal";
 import TextArea from "./ui/TextArea";
 import type { ITodo } from "../interface/interface";
 import axiosInstance from "../config/axios.config";
+import TodoSkeleton from "./ui/TodoSkeleton";
+import Button from "./ui/Button";
+import Spinner from "./ui/Spinner";
 
 
 
@@ -54,24 +57,7 @@ const TodoList =()=>{
 
 
 
-    const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
 
-
-    const closeConfirmModal =()=>{
-        setTodoToEdit({ id:0, title: '', description: '' });
-
-        setIsOpenConfirmModal(false)
-    }
-
-    const onRemove = ()=>{
-        setTodoToEdit({ id:0, title: '', description: '' });
-
-        setIsOpenConfirmModal(false) 
-    }
-    const openConfirmModal = (todo: ITodo) => {
-        setTodoToEdit(todo);
-        setIsOpenConfirmModal(true);
-      };
     /**
      * State variable to track whether an update is required.
      * 
@@ -109,10 +95,20 @@ const TodoList =()=>{
      */}
     const [todoToEdit,setTodoToEdit] = useState<ITodo>({
         id: 0,
+        documentId:'',
         title: '',
         description: ''
 
     });
+
+
+
+    const [openAddNewTodoModal,setOpenAddNewTodoModal] = useState(false);
+
+    const closeAddNewTodoModal = ()=> setOpenAddNewTodoModal(false);
+    const openAddNewTodoModalFun = ()=> setOpenAddNewTodoModal(true);
+
+    const [queryversion,setQueryVersion]=useState(1);
    { /**
      * Close the edit modal and reset the todo to be edited.
      * 
@@ -129,11 +125,43 @@ const TodoList =()=>{
     */}
 
     const onOpenModal = (todo:ITodo)=>{
-    
+        console.log("Todo to edit:", todo);
        setTodoToEdit(todo);
         setIsEditOpen(true);
        
     }
+
+    // ------------
+
+
+    const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
+
+
+    const closeConfirmModal =()=>{
+        setTodoToEdit({ id:0,documentId:'0' ,title: '', description: '' });
+
+        setIsOpenConfirmModal(false)
+    }
+
+    const onRemove = async () => {
+        try {
+          const { status } = await axiosInstance.delete(`/todos/${todoToEdit.documentId}`, {
+            headers: {
+              Authorization: `Bearer ${userData.jwt}`,
+            },
+          });
+          if (status === 204) {
+            closeConfirmModal();
+            // setQueryVersion((prev) => prev + 1);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    const openConfirmModal = (todo: ITodo) => {
+        setTodoToEdit(todo);
+        setIsOpenConfirmModal(true);
+      };
 
 {   /**
     * Handles the submission of the edit form for a todo item.
@@ -174,9 +202,10 @@ const TodoList =()=>{
 
         setUpdate(true)
         e.preventDefault();
+        console.log("Todo ID to update:", todoToEdit.id);
         try {
             const {title,description} = todoToEdit;
-            const {status} = await axiosInstance.put(`/todos/${todoToEdit.id}`,{data:{title,description }},{
+            const {status} = await axiosInstance.put(`/todos/${todoToEdit.documentId}`,{data:{title,description }},{
                 headers:
                 {
                     Authorization:`Bearer ${userData.jwt}`}
@@ -209,27 +238,48 @@ const onChangeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaEleme
 
 const {isLoading,data,error} = useAuthQuery({queryKey:["todoList",`${todoToEdit.id}`],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
 
-if(isLoading) return <h1>Loading ....</h1>
+// if(!isLoading) return <TodoSkeleton/>
+if(isLoading){
+    return Array.from({length:5}).map((_,index)=><TodoSkeleton key={index}/>)
+}
 
 if (error) return 'An error has occurred: ' + error.message
 
 return (
     <section className="space-y-2">
+        
+        <div className="w-fit mx-auto my-10">
+            <Button onClick={openAddNewTodoModalFun} className="bg-indigo-600 hover:bg-indigo-400" width="w-full">Add New Task</Button>
+        </div>
 
-        {
-
-    data.map((todo:ITodo)=>(
-        <div key={todo.id} className="flex items-center justify-between hover:bg-gray-200 duration-300 p-3 rounded-md even:bg-gray-100">
-    <p className="w-full font-semibold">{todo.title}</p>
+{data.map((todo:ITodo)=>(
+        <div key={todo.id} className="max-w-lg mx-auto flex items-center justify-between hover:bg-gray-200 duration-300 p-3 rounded-md even:bg-gray-100">
+  
+   <p className="w-full font-semibold">📝 {todo.title}</p>
+  
     <div className="flex items-center justify-end w-full space-x-3">
-        <button onClick={()=>onOpenModal(todo)} >Edit</button>
-        <button onClick={()=>openConfirmModal(todo)}>remove</button>
+        <Button width="w-fit" className="bg-indigo-600 hover:bg-indigo-400" onClick={()=>onOpenModal(todo)} >Edit</Button>
+        <Button width="w-fit" className="bg-red-500 hover:bg-red-800" onClick={()=>openConfirmModal(todo)}>remove</Button>
     </div>
 
     </div>
     ))
         }
+      
 
+        <Modal close={()=>console.log("close")} isOpen={openAddNewTodoModal} title="Add New Tasks " >
+<form className="space-y-6" onSubmit={onSubmitHandler}>
+    <div className="flex flex-col ">
+       <Input name="title" value={todoToEdit.title} onChange={onChangeHandler}/>
+       <TextArea name="description" value={todoToEdit.description} onChange={onChangeHandler}/>
+    </div>
+    <div className="flex items-center space-x-6 px-10">
+        <Button className="bg-indigo-600 hover:bg-indigo-400" width="w-full">{update? <Spinner/>:"Update"}</Button>
+        <Button type="button" onClick={closeAddNewTodoModal} className="bg-gray-600 hover:bg-gray-900" width={"w-full"}>Cancel</Button>
+       </div>
+
+</form>
+         </Modal>
         <Modal close={()=>console.log("close")} isOpen={isEditOpen} title="Edit this todo " >
 <form className="space-y-6" onSubmit={onSubmitHandler}>
 <div className="flex flex-col ">
@@ -237,8 +287,8 @@ return (
        <TextArea name="description" value={todoToEdit.description} onChange={onChangeHandler}/>
        </div>
        <div className="flex items-center space-x-6 px-10">
-        <button>{update? "loading":"Update"}</button>
-        <button onClick={onCloseEdit}>Cancel</button>
+        <Button className="bg-indigo-600 hover:bg-indigo-400" width="w-full">{update? <Spinner/>:"Update"}</Button>
+        <Button type="button" onClick={onCloseEdit} className="bg-gray-600 hover:bg-gray-900" width={"w-full"}>Cancel</Button>
        </div>
 </form>
          </Modal>
@@ -247,18 +297,20 @@ return (
       <Modal
         isOpen={isOpenConfirmModal}
         close={closeConfirmModal}
-        title="Are you sure you want to remove this todo from your store ?"
+        title="Are you sure you want to remove this Task ?"
       >
-        <p>"Deleting this todo will remove it permenantly from your inventory. Any associated data, sales history, and other related information will also be deleted. Please make sure this is the intended action."</p>
+        <p >Deleting this Task will remove it permenantly from your inventory. Please make sure this is the intended action.</p>
         <div className="flex items-center space-x-3 mt-4">
-          <button  onClick={onRemove}>
+          <Button className="bg-red-800 hover:bg-red-900" width="w-full"  onClick={()=>onRemove()}>
             Yes , Remove
-          </button>
-          <button type="button" onClick={closeConfirmModal}>
+          </Button>
+          <Button width="w-fit" className="bg-gray-400 hover:bg-gray-700" type="button" onClick={closeConfirmModal}>
             Cancel
-          </button>
+          </Button>
         </div>
       </Modal>
+
+     
 
     </section>
 

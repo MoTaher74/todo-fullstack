@@ -1,6 +1,7 @@
 // import { NavLink } from "react-router-dom";
 
 import { NavLink, useLocation } from "react-router-dom";
+import Button from "./ui/Button";
 
 
 const Navbar =()=>{
@@ -19,7 +20,7 @@ const logout = ()=>{
 }
 
 return (
-<nav className="max-w-lg mx-auto px-4 py-6 mt-7 mb-20 rounded-md bg-green-400">
+<nav className="max-w-lg mx-auto px-4 py-6 mt-7 mb-20 rounded-md border shadow-md">
     <ul className="flex items-center justify-between font-semibold">
         <li className="">
             <NavLink to={"/"}>Home</NavLink>
@@ -29,8 +30,7 @@ return (
                 <li className="text-black duration-200 ">
                     <NavLink to ={"/profile"}>Profile</NavLink>
                 </li>
-                <button className="cursor-pointer" onClick={logout}>Logout</button>
-
+                <Button className="bg-red-600 hover:bg-red-800" width="w-fit" onClick={logout}>Logout</Button>
 
             </div>
             ):(  <p className="flex space-x-4 items-center">

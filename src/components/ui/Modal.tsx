@@ -1,14 +1,9 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
-import type { ReactNode } from 'react';
+import type { IModal } from '../../interface/interface';
 
-interface IProps{
-    isOpen:boolean;
-    close:()=>void;
-    title?:string;
-    children:ReactNode;
-}
 
- function Modal({isOpen,close,title,children}:IProps) {
+
+ const Modal = ({isOpen,close,title,children}:IModal)=> {
 
 
   return (

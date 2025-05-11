@@ -31,8 +31,11 @@ export interface IErrorResponse {
 
 export interface ITodo {
     id: number;
+    documentId?: string; // أضف documentId
     title: string;
     description: string;
+    createdAt?: string;
+    updatedAt?: string;
   }
   
 

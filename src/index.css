@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.active{
+    color:rgb(120, 16, 195);
+    font-size: 18px;
+
+}
