@@ -9,7 +9,7 @@ type?:"button" | "submit" | "reset"
 }
 
 const Button =({className,width="w-full",type,children,...rest}:IBtn)=>{
-return ( <button type={type} className={`${className} ${width} border-none outline-none  transition-all duration-300 p-2 rounded-md text-white`}  {...rest}> {children}</button>
+return ( <button type={type} className={`${className} ${width}  outline-none  transition-all duration-300 p-2 rounded-md text-white`}  {...rest}> {children}</button>
 
 )
 }

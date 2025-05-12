@@ -30,7 +30,7 @@ const useAuthQuery = ({queryKey, url, config }: IAuthQuery)=>{
         queryFn:async ()=>{
            const {data}= await axiosInstance.get(url,config);
                 
-            return data.todos;
+            return data;
         }
     });
 }

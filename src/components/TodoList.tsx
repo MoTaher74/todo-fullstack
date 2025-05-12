@@ -1,6 +1,7 @@
 
 import { useState, type ChangeEvent,  type FormEvent } from "react";
 import useAuthQuery from "../hooks/useAuthQuery";
+import { faker } from '@faker-js/faker';
 import Input from "./ui/Input";
 import Modal from "./ui/Modal";
 import TextArea from "./ui/TextArea";
@@ -53,7 +54,7 @@ const TodoList =()=>{
      */}
     const [isEditOpen,setIsEditOpen] = useState(false);
 
-
+    const [queryversion,setQueryVersion]=useState(1);
 
 
  {   /**
@@ -236,7 +237,25 @@ const TodoList =()=>{
       }
   }
 
+  {/**Generate todos pagination API Sections */}
 
+  const onGenerateTodos =async ()=>{
+
+for(let i= 0; i<100 ; i++){
+  try {
+     
+    await axiosInstance.post(`/todos`,{data:{title:faker.lorem.word(5),description:"",user:[userData.user.id] }},{
+      headers:
+      {
+          Authorization:`Bearer ${userData.jwt}`}
+      });
+      
+} catch (error) {
+  console.log(error)
+
+}
+}
+  }
 
 {   /**
     * Handles the submission of the edit form for a todo item.
@@ -314,7 +333,7 @@ const onChangeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaEleme
 
 // ------------------------------------------------
 
-  const [queryversion,setQueryVersion]=useState(1);
+
 
 {/**
  * Custom hook to fetch the todo list data using the `useAuthQuery` hook.
@@ -361,11 +380,12 @@ if (error) return 'An error has occurred: ' + error.message
 return (
     <section className="space-y-2">
         
-        <div className="w-fit mx-auto my-10">
-            <Button onClick={openAddNewTodoModalFun} className="bg-indigo-600 hover:bg-indigo-400" width="w-full">Add New Task</Button>
+        <div className="flex gap-10 w-fit mx-auto my-10">
+            <Button onClick={openAddNewTodoModalFun} className="bg-indigo-600 hover:bg-indigo-400" width="w-fit">Add New Task</Button>
+            <Button onClick={onGenerateTodos}  className="bg-indigo-200 hover:bg-indigo-600" width="w-fit">Generate Tasks</Button>
         </div>
 
-{data.length?data.map((todo:ITodo)=>(
+{data.todos.length?data.todos.map((todo:ITodo)=>(
         <div key={todo.id} className="max-w-lg mx-auto flex items-center justify-between hover:bg-gray-200 duration-300 p-3 rounded-md even:bg-gray-100">
   
    <p className="w-full font-semibold">📝 {todo.title}</p>
@@ -416,7 +436,7 @@ return (
       >
         <p >Deleting this Task will remove it permenantly from your inventory. Please make sure this is the intended action.</p>
         <div className="flex items-center space-x-3 mt-4">
-          <Button className="bg-red-800 hover:bg-red-900" width="w-full"  onClick={()=>onRemove()}>
+          <Button type="button" className="bg-red-800 hover:bg-red-900" width="w-full"  onClick={()=>onRemove()}>
             Yes , Remove
           </Button>
           <Button width="w-fit" className="bg-gray-400 hover:bg-gray-700" type="button" onClick={closeConfirmModal}>
@@ -432,5 +452,5 @@ return (
 )
 }
 
-export default TodoList ;
 
+export default TodoList 

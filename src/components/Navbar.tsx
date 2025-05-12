@@ -28,6 +28,9 @@ return (
         {userData? (
             <div className="flex items-center space-x-4 font-semibold text-md">
                 <li className="text-black duration-200 ">
+                    <NavLink to ={"/todos"}>Todos</NavLink>
+                </li>
+                <li className="text-black duration-200 ">
                     <NavLink to ={"/profile"}>Profile</NavLink>
                 </li>
                 <Button className="bg-red-600 hover:bg-red-800" width="w-fit" onClick={logout}>Logout</Button>

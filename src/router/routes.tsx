@@ -5,6 +5,7 @@ import Register from "../pages/Register";
 import HomePage from "../pages";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ErrorHandler from "../components/error/ErrorHandler";
+import TodoPage from "../pages/TodoPage";
 
 const storageKey = "isLoggedIn";
 const userDataString = localStorage.getItem(storageKey);
@@ -16,6 +17,11 @@ const router = createBrowserRouter(
         <Route index element={ 
             <ProtectedRoute isAllowed={userData?.jwt} redirectPath={"/login"} data={userData}>
                 <HomePage/>
+            </ProtectedRoute>
+        }/>
+        <Route path="todos" element={ 
+            <ProtectedRoute isAllowed={userData?.jwt} redirectPath={"/login"} data={userData}>
+                <TodoPage/>
             </ProtectedRoute>
         }/>
         <Route path="profile" element={ 
