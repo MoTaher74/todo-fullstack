@@ -1,7 +1,6 @@
 
 import { useState, type ChangeEvent,  type FormEvent } from "react";
 import useAuthQuery from "../hooks/useAuthQuery";
-import { faker } from '@faker-js/faker';
 import Input from "./ui/Input";
 import Modal from "./ui/Modal";
 import TextArea from "./ui/TextArea";
@@ -11,6 +10,7 @@ import TodoSkeleton from "./ui/TodoSkeleton";
 import Button from "./ui/Button";
 import Spinner from "./ui/Spinner";
 import EmptyTask from "./EmptyTask";
+
 
 
 {/**
@@ -45,7 +45,17 @@ const URL = "/users/me?populate=todos";
  * @function
  * @returns {ReactElement} A React component with a list of todos and an edit modal.
  */}
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * A component that displays a list of todos, with the ability to edit an individual todo.
+ * 
+ * @function
+ * @returns {ReactElement} A React component with a list of todos and an edit modal.
+ * @example
+ * 
+/*******  0ff4c80d-a4eb-47a5-97bd-4a5085fa37e1  *******/
 const TodoList =()=>{
+
 {    /**
      * State to manage the visibility of the edit modal or component.
      * 
@@ -237,25 +247,7 @@ const TodoList =()=>{
       }
   }
 
-  {/**Generate todos pagination API Sections */}
 
-  const onGenerateTodos =async ()=>{
-
-for(let i= 0; i<100 ; i++){
-  try {
-     
-    await axiosInstance.post(`/todos`,{data:{title:faker.lorem.word(5),description:"",user:[userData.user.id] }},{
-      headers:
-      {
-          Authorization:`Bearer ${userData.jwt}`}
-      });
-      
-} catch (error) {
-  console.log(error)
-
-}
-}
-  }
 
 {   /**
     * Handles the submission of the edit form for a todo item.
@@ -369,20 +361,19 @@ const onChangeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaEleme
  * - The `userData.jwt` must contain a valid JWT token for authentication.
  * - Handle the `isLoading` and `error` states appropriately in your component to provide a good user experience.
  */}
-const {isLoading,data,error} = useAuthQuery({queryKey:["todoList",`${queryversion}`],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
+const {isLoading,data} = useAuthQuery({queryKey:["todoList",`${queryversion}`],url:URL,config:{headers: { Authorization: `Bearer ${userData.jwt}`}}});
 
 if(isLoading){
     return Array.from({length:5}).map((_,index)=><TodoSkeleton key={index}/>)
 }
 
-if (error) return 'An error has occurred: ' + error.message
 
 return (
     <section className="space-y-2">
         
         <div className="flex gap-10 w-fit mx-auto my-10">
             <Button onClick={openAddNewTodoModalFun} className="bg-indigo-600 hover:bg-indigo-400" width="w-fit">Add New Task</Button>
-            <Button onClick={onGenerateTodos}  className="bg-indigo-200 hover:bg-indigo-600" width="w-fit">Generate Tasks</Button>
+           
         </div>
 
 {data.todos.length?data.todos.map((todo:ITodo)=>(
@@ -398,6 +389,7 @@ return (
     </div>
     )):<EmptyTask title="No Tasks Yet !"/>
         }
+          
       
 {/** -------- this is add task Modal */}
         <Modal close={closeAddNewTodoModal} isOpen={openAddNewTodoModal} title="Add New Tasks " >
@@ -445,7 +437,6 @@ return (
         </div>
       </Modal>
 
-     
 
     </section>
 

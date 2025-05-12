@@ -1,8 +1,8 @@
 interface IProps {
     page: number;
     pageCount: number;
-    total?: number;
-    isLoading?: boolean;
+    total: number;
+    isLoading: boolean;
     onClickPrev: () => void;
     onClickNext: () => void;
   }
